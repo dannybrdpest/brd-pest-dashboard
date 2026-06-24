@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script>Chart.register(ChartDataLabels);</script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -182,41 +184,52 @@ function aggCancel() {
 const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
 const tickColor = isDark ? '#888780' : '#6b6b6b';
+const labelColor = isDark ? '#f0f0ee' : '#1a1a1a';
+
+const datalabels = {
+  display: true,
+  color: labelColor,
+  font: { size: 10, weight: '500' },
+  formatter: v => v == null ? '' : v.toLocaleString()
+};
+const datalabelsPct = { ...datalabels, formatter: v => v == null ? '' : v + '%' };
+const datalabelsDollar = { ...datalabels, formatter: v => v == null ? '' : '$' + (v/1000).toFixed(0) + 'k' };
+
 const defaults = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } };
 function scaleX(fmt) { return { ticks:{ callback:fmt||null, color:tickColor, font:{size:11} }, grid:{ color:gridColor } }; }
 function scaleY(fmt) { return { ticks:{ callback:fmt||null, color:tickColor, font:{size:11}, autoSkip:false }, grid:{ color:gridColor } }; }
 
 new Chart(document.getElementById('c1'), { type:'bar', data:{ labels:OFFICES, datasets:[
-  { label:'Active', data:active, backgroundColor:'#378ADD', borderRadius:3 },
-  { label:'Good', data:good, backgroundColor:'#1D9E75', borderRadius:3 }
-]}, options:{ ...defaults, scales:{ x:scaleX(), y:{ ...scaleY(v=>v.toLocaleString()), grid:{ color:gridColor } } } } });
+  { label:'Active', data:active, backgroundColor:'#378ADD', borderRadius:3, datalabels:{ ...datalabels, anchor:'end', align:'end' } },
+  { label:'Good',   data:good,   backgroundColor:'#1D9E75', borderRadius:3, datalabels:{ ...datalabels, anchor:'end', align:'end' } }
+]}, options:{ ...defaults, layout:{ padding:{ top:20 } }, scales:{ x:scaleX(), y:{ ...scaleY(v=>v.toLocaleString()), grid:{ color:gridColor } } } } });
 
 const mrrS = OFFICES.map((n,i)=>[n,mrr[i]]).sort((a,b)=>b[1]-a[1]);
-new Chart(document.getElementById('c2'), { type:'bar', data:{ labels:mrrS.map(x=>x[0]), datasets:[{ data:mrrS.map(x=>x[1]), backgroundColor:'#1D9E75', borderRadius:3 }] },
-  options:{ ...defaults, indexAxis:'y', scales:{ x:{ ...scaleX(v=>'$'+(v/1000).toFixed(0)+'k'), grid:{ color:gridColor } }, y:scaleY() } } });
+new Chart(document.getElementById('c2'), { type:'bar', data:{ labels:mrrS.map(x=>x[0]), datasets:[{ data:mrrS.map(x=>x[1]), backgroundColor:'#1D9E75', borderRadius:3, datalabels:{ ...datalabelsDollar, anchor:'end', align:'end' } }] },
+  options:{ ...defaults, layout:{ padding:{ right:40 } }, indexAxis:'y', scales:{ x:{ ...scaleX(v=>'$'+(v/1000).toFixed(0)+'k'), grid:{ color:gridColor } }, y:scaleY() } } });
 
 new Chart(document.getElementById('c3'), { type:'bar', data:{ labels:OFFICES, datasets:[
-  { label:'On autopay', data:apOn, backgroundColor:'#534AB7', borderRadius:3 },
-  { label:'Not', data:apOff, backgroundColor:'#D3D1C7', borderRadius:3 }
+  { label:'On autopay', data:apOn,  backgroundColor:'#534AB7', borderRadius:3, datalabels:{ ...datalabels, anchor:'center', align:'center', color:'#fff' } },
+  { label:'Not',        data:apOff, backgroundColor:'#D3D1C7', borderRadius:3, datalabels:{ display:false } }
 ]}, options:{ ...defaults, scales:{ x:{ stacked:true, ...scaleX(), grid:{ color:gridColor } }, y:{ stacked:true, ...scaleY(v=>v.toLocaleString()), grid:{ color:gridColor } } } } });
 
 new Chart(document.getElementById('c4'), { type:'bar', data:{ labels:OFFICES, datasets:[
-  { data:ret012,  backgroundColor:'#378ADD', borderRadius:3 },
-  { data:ret1224, backgroundColor:'#1D9E75', borderRadius:3 },
-  { data:ret24p,  backgroundColor:'#BA7517', borderRadius:3 }
-]}, options:{ ...defaults, scales:{ x:scaleX(), y:{ ...scaleY(v=>v+'%'), min:0, max:100, grid:{ color:gridColor } } } } });
+  { data:ret012,  backgroundColor:'#378ADD', borderRadius:3, datalabels:{ ...datalabelsPct, anchor:'end', align:'end' } },
+  { data:ret1224, backgroundColor:'#1D9E75', borderRadius:3, datalabels:{ ...datalabelsPct, anchor:'end', align:'end' } },
+  { data:ret24p,  backgroundColor:'#BA7517', borderRadius:3, datalabels:{ ...datalabelsPct, anchor:'end', align:'end' } }
+]}, options:{ ...defaults, layout:{ padding:{ top:20 } }, scales:{ x:scaleX(), y:{ ...scaleY(v=>v+'%'), min:0, max:110, grid:{ color:gridColor } } } } });
 
 const months=['Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24','Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26'];
 const o1c=[2.36,4.50,6.91,9.60,13.49,17.03,22.81,26.98,35.10,39.56,42.71,44.68,46.49,48.28,50.67,51.72,53.47,55.35,57.51,59.76,61.01,62.32,64.71,65.21,66.13,67.09,67.53,73.30,74.04,74.66];
 const o2c=[1.59,3.65,6.61,9.40,11.15,13.63,19.63,22.74,32.94,37.23,39.52,41.93,44.25,46.38,48.63,50.60,53.78,56.26,58.01,59.24,61.25,65.63,69.25,69.95,70.62,71.35,72.33,77.00,78.34,78.94];
 new Chart(document.getElementById('c5'), { type:'line', data:{ labels:months, datasets:[
-  { label:'Utah', data:o1c, borderColor:'#378ADD', backgroundColor:'transparent', pointRadius:2, tension:0.3 },
-  { label:'San Antonio', data:o2c, borderColor:'#D85A30', backgroundColor:'transparent', pointRadius:2, tension:0.3, borderDash:[4,3] }
+  { label:'Utah', data:o1c, borderColor:'#378ADD', backgroundColor:'transparent', pointRadius:2, tension:0.3, datalabels:{ display:false } },
+  { label:'San Antonio', data:o2c, borderColor:'#D85A30', backgroundColor:'transparent', pointRadius:2, tension:0.3, borderDash:[4,3], datalabels:{ display:false } }
 ]}, options:{ ...defaults, scales:{ x:{ ...scaleX(), ticks:{ autoSkip:true, maxTicksLimit:10, maxRotation:45, color:tickColor, font:{size:11} } }, y:{ ...scaleY(v=>v+'%'), min:0, max:85, grid:{ color:gridColor } } } } });
 
 function hBar(id, rows, color) {
-  new Chart(document.getElementById(id), { type:'bar', data:{ labels:rows.map(r=>r[0]), datasets:[{ data:rows.map(r=>r[1]), backgroundColor:color||'#7F77DD', borderRadius:3 }] },
-    options:{ ...defaults, indexAxis:'y', scales:{ x:{ ...scaleX(v=>v.toLocaleString()), grid:{ color:gridColor } }, y:scaleY() } } });
+  new Chart(document.getElementById(id), { type:'bar', data:{ labels:rows.map(r=>r[0]), datasets:[{ data:rows.map(r=>r[1]), backgroundColor:color||'#7F77DD', borderRadius:3, datalabels:{ ...datalabels, anchor:'end', align:'end' } }] },
+    options:{ ...defaults, layout:{ padding:{ right:40 } }, indexAxis:'y', scales:{ x:{ ...scaleX(v=>v.toLocaleString()), grid:{ color:gridColor } }, y:scaleY() } } });
 }
 hBar('c6', aggCancel());
 const ids=['c7','c8','c9','c10','c11','c12','c13'];
