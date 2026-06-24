@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRD Pest — Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f9f9f8;
+    --surface: #ffffff;
+    --border: rgba(0,0,0,0.08);
+    --text: #1a1a1a;
+    --text-muted: #6b6b6b;
+    --blue: #378ADD;
+    --green: #1D9E75;
+    --amber: #BA7517;
+    --purple: #534AB7;
+    --coral: #D85A30;
+    --gray: #D3D1C7;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #111110;
+      --surface: #1c1c1b;
+      --border: rgba(255,255,255,0.08);
+      --text: #f0f0ee;
+      --text-muted: #888780;
+    }
+  }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.5; }
+  .page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem; }
+  .header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 2rem; border-bottom: 0.5px solid var(--border); padding-bottom: 1rem; }
+  .header h1 { font-size: 20px; font-weight: 500; }
+  .header .updated { font-size: 12px; color: var(--text-muted); }
+  .section { margin-bottom: 2.5rem; }
+  .section-title { font-size: 11px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 14px; }
+  .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .kpi { background: var(--surface); border: 0.5px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .kpi-label { font-size: 12px; color: var(--text-muted); margin-bottom: 4px; }
+  .kpi-value { font-size: 24px; font-weight: 500; }
+  .kpi-sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
+  .card-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+  .card-sub { font-size: 12px; color: var(--text-muted); margin-bottom: 14px; }
+  .chart-wrap { position: relative; width: 100%; }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 10px; font-size: 12px; color: var(--text-muted); }
+  .legend span { display: flex; align-items: center; gap: 5px; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+  .cancel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 700px) {
+    .two-col, .three-col, .cancel-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="header">
+    <h1>BRD Pest — dashboard</h1>
+    <span class="updated">Last updated: June 24, 2026</span>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Company overview</div>
+    <div class="kpi-grid">
+      <div class="kpi"><div class="kpi-label">Active customers</div><div class="kpi-value">36,456</div></div>
+      <div class="kpi"><div class="kpi-label">Good customers</div><div class="kpi-value">20,033</div><div class="kpi-sub">54.9% of active</div></div>
+      <div class="kpi"><div class="kpi-label">Monthly recurring revenue</div><div class="kpi-value">$1.04M</div><div class="kpi-sub">good customers only</div></div>
+      <div class="kpi"><div class="kpi-label">Annual recurring revenue</div><div class="kpi-value">$12.45M</div><div class="kpi-sub">good customers only</div></div>
+      <div class="kpi"><div class="kpi-label">On autopay</div><div class="kpi-value">93.3%</div><div class="kpi-sub">18,691 of 20,033</div></div>
+      <div class="kpi"><div class="kpi-label">Avg MRR / customer</div><div class="kpi-value">$51.79</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Active vs good customers</div>
+    <div class="card">
+      <div class="legend">
+        <span><span class="legend-dot" style="background:var(--blue);"></span>Active customers</span>
+        <span><span class="legend-dot" style="background:var(--green);"></span>Good customers</span>
+      </div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="c1"></canvas></div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="section">
+      <div class="section-title">MRR by office</div>
+      <div class="card" style="height:calc(100% - 28px);">
+        <div class="card-sub">Company total: $1,037,528 / mo</div>
+        <div class="chart-wrap" style="height:260px;"><canvas id="c2"></canvas></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">Autopay rate</div>
+      <div class="card" style="height:calc(100% - 28px);">
+        <div class="card-sub">Company total: 93.3% (18,691 of 20,033)</div>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:var(--purple);"></span>On autopay</span>
+          <span><span class="legend-dot" style="background:var(--gray);"></span>Not on autopay</span>
+        </div>
+        <div class="chart-wrap" style="height:240px;"><canvas id="c3"></canvas></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Retention by cohort</div>
+    <div class="card">
+      <div class="legend">
+        <span><span class="legend-dot" style="background:var(--blue);"></span>0–12 months</span>
+        <span><span class="legend-dot" style="background:var(--green);"></span>12–24 months</span>
+        <span><span class="legend-dot" style="background:var(--amber);"></span>24+ months</span>
+      </div>
+      <div class="chart-wrap" style="height:280px;"><canvas id="c4"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cumulative attrition since Jan 1, 2024</div>
+    <div class="card">
+      <div class="card-sub">Offices 8, 9, 10 excluded — insufficient starting volume on Jan 1 2024</div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:var(--blue);"></span>Utah (4,573 starting)</span>
+        <span><span class="legend-dot" style="background:var(--coral);"></span>San Antonio (3,148 starting)</span>
+      </div>
+      <div class="chart-wrap" style="height:260px;"><canvas id="c5"></canvas></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Cancel reasons</div>
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="card-title">All offices combined</div>
+      <div class="card-sub">Top 10 reasons across all offices</div>
+      <div class="chart-wrap" style="height:380px;"><canvas id="c6"></canvas></div>
+    </div>
+    <div class="cancel-grid">
+      <div class="card"><div class="card-title">Utah</div><div class="chart-wrap" style="height:200px;"><canvas id="c7"></canvas></div></div>
+      <div class="card"><div class="card-title">San Antonio</div><div class="chart-wrap" style="height:200px;"><canvas id="c8"></canvas></div></div>
+      <div class="card"><div class="card-title">Dallas</div><div class="chart-wrap" style="height:200px;"><canvas id="c9"></canvas></div></div>
+      <div class="card"><div class="card-title">Austin</div><div class="chart-wrap" style="height:200px;"><canvas id="c10"></canvas></div></div>
+    </div>
+    <div class="three-col" style="margin-top:1rem;">
+      <div class="card"><div class="card-title">Maryland</div><div class="chart-wrap" style="height:200px;"><canvas id="c11"></canvas></div></div>
+      <div class="card"><div class="card-title">Houston</div><div class="chart-wrap" style="height:200px;"><canvas id="c12"></canvas></div></div>
+      <div class="card"><div class="card-title">OKC</div><div class="chart-wrap" style="height:200px;"><canvas id="c13"></canvas></div></div>
+    </div>
+  </div>
+
+</div>
+<script>
+const OFFICES = ['Utah','San Antonio','Dallas','Austin','Maryland','Houston','OKC'];
+const active  = [5242,5898,7584,4534,1731,6631,4836];
+const good    = [3504,3165,3789,3032,1061,3186,2296];
+const mrr     = [156975,164464,204874,170518,55764,160159,124773];
+const apOn    = [3311,2952,3512,2887,996,2961,2072];
+const apOff   = [193,213,277,145,65,225,224];
+const ret012  = [70.8,67.6,77.4,74.0,82.6,82.4,80.5];
+const ret1224 = [41.3,40.6,42.7,34.6,56.6,58.3,65.4];
+const ret24p  = [16.2,21.6,20.7,21.3,null,null,null];
+const cancelData = [
+  [['Unspecified',3992],['Value/Price',1920],['Initial Appt Canceled',746],['Contract Fulfilled',630],['Moved',476],['Competitor',457],['Refused Renewal',420],['Unable to Contact',297]],
+  [['Unspecified',2859],['Value/Price',1578],['Initial Appt Canceled',1062],['Billing Issue',692],['Contract Fulfilled',632],['Moved',425],['Unable to Contact',395],['Still Seeing Bugs',268]],
+  [['Unspecified',1600],['Initial Appt Canceled',1482],['Value/Price',1462],['Contract Fulfilled',847],['Unable to Contact',454],['Moved',300],['Still Seeing Bugs',292],['Billing Issue',289]],
+  [['Value/Price',1010],['Unspecified',960],['Initial Appt Canceled',661],['Contract Fulfilled',487],['Unable to Contact',361],['Billing Issue',333],['Moved',241],['Agreement Dispute',195]],
+  [['Unspecified',327],['Initial Appt Canceled',137],['Contract Fulfilled',122],['Billing Issue',57],['Agreement Dispute',54],['Value/Price',52],['Refused Service',31],['Service Quality',27]],
+  [['Unspecified',1172],['Initial Appt Canceled',463],['Billing Issue',310],['Contract Fulfilled',254],['Value/Price',176],['Agreement Dispute',154],['Refused Service',126],['Service Quality',103]],
+  [['Initial Appt Canceled',670],['Unspecified',455],['Contract Fulfilled',269],['Refused Service',215],['Value/Price',170],['Moved',98],['KAREN',84],['Agreement Dispute',77]]
+];
+function aggCancel() {
+  const m = {};
+  cancelData.forEach(o => o.forEach(([r,c]) => { m[r]=(m[r]||0)+c; }));
+  return Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,10);
+}
+const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+const tickColor = isDark ? '#888780' : '#6b6b6b';
+const defaults = { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } } };
+function scaleX(fmt) { return { ticks:{ callback:fmt||null, color:tickColor, font:{size:11} }, grid:{ color:gridColor } }; }
+function scaleY(fmt) { return { ticks:{ callback:fmt||null, color:tickColor, font:{size:11}, autoSkip:false }, grid:{ color:gridColor } }; }
+
+new Chart(document.getElementById('c1'), { type:'bar', data:{ labels:OFFICES, datasets:[
+  { label:'Active', data:active, backgroundColor:'#378ADD', borderRadius:3 },
+  { label:'Good', data:good, backgroundColor:'#1D9E75', borderRadius:3 }
+]}, options:{ ...defaults, scales:{ x:scaleX(), y:{ ...scaleY(v=>v.toLocaleString()), grid:{ color:gridColor } } } } });
+
+const mrrS = OFFICES.map((n,i)=>[n,mrr[i]]).sort((a,b)=>b[1]-a[1]);
+new Chart(document.getElementById('c2'), { type:'bar', data:{ labels:mrrS.map(x=>x[0]), datasets:[{ data:mrrS.map(x=>x[1]), backgroundColor:'#1D9E75', borderRadius:3 }] },
+  options:{ ...defaults, indexAxis:'y', scales:{ x:{ ...scaleX(v=>'$'+(v/1000).toFixed(0)+'k'), grid:{ color:gridColor } }, y:scaleY() } } });
+
+new Chart(document.getElementById('c3'), { type:'bar', data:{ labels:OFFICES, datasets:[
+  { label:'On autopay', data:apOn, backgroundColor:'#534AB7', borderRadius:3 },
+  { label:'Not', data:apOff, backgroundColor:'#D3D1C7', borderRadius:3 }
+]}, options:{ ...defaults, scales:{ x:{ stacked:true, ...scaleX(), grid:{ color:gridColor } }, y:{ stacked:true, ...scaleY(v=>v.toLocaleString()), grid:{ color:gridColor } } } } });
+
+new Chart(document.getElementById('c4'), { type:'bar', data:{ labels:OFFICES, datasets:[
+  { data:ret012,  backgroundColor:'#378ADD', borderRadius:3 },
+  { data:ret1224, backgroundColor:'#1D9E75', borderRadius:3 },
+  { data:ret24p,  backgroundColor:'#BA7517', borderRadius:3 }
+]}, options:{ ...defaults, scales:{ x:scaleX(), y:{ ...scaleY(v=>v+'%'), min:0, max:100, grid:{ color:gridColor } } } } });
+
+const months=['Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24','Jan 25','Feb 25','Mar 25','Apr 25','May 25','Jun 25','Jul 25','Aug 25','Sep 25','Oct 25','Nov 25','Dec 25','Jan 26','Feb 26','Mar 26','Apr 26','May 26','Jun 26'];
+const o1c=[2.36,4.50,6.91,9.60,13.49,17.03,22.81,26.98,35.10,39.56,42.71,44.68,46.49,48.28,50.67,51.72,53.47,55.35,57.51,59.76,61.01,62.32,64.71,65.21,66.13,67.09,67.53,73.30,74.04,74.66];
+const o2c=[1.59,3.65,6.61,9.40,11.15,13.63,19.63,22.74,32.94,37.23,39.52,41.93,44.25,46.38,48.63,50.60,53.78,56.26,58.01,59.24,61.25,65.63,69.25,69.95,70.62,71.35,72.33,77.00,78.34,78.94];
+new Chart(document.getElementById('c5'), { type:'line', data:{ labels:months, datasets:[
+  { label:'Utah', data:o1c, borderColor:'#378ADD', backgroundColor:'transparent', pointRadius:2, tension:0.3 },
+  { label:'San Antonio', data:o2c, borderColor:'#D85A30', backgroundColor:'transparent', pointRadius:2, tension:0.3, borderDash:[4,3] }
+]}, options:{ ...defaults, scales:{ x:{ ...scaleX(), ticks:{ autoSkip:true, maxTicksLimit:10, maxRotation:45, color:tickColor, font:{size:11} } }, y:{ ...scaleY(v=>v+'%'), min:0, max:85, grid:{ color:gridColor } } } } });
+
+function hBar(id, rows, color) {
+  new Chart(document.getElementById(id), { type:'bar', data:{ labels:rows.map(r=>r[0]), datasets:[{ data:rows.map(r=>r[1]), backgroundColor:color||'#7F77DD', borderRadius:3 }] },
+    options:{ ...defaults, indexAxis:'y', scales:{ x:{ ...scaleX(v=>v.toLocaleString()), grid:{ color:gridColor } }, y:scaleY() } } });
+}
+hBar('c6', aggCancel());
+const ids=['c7','c8','c9','c10','c11','c12','c13'];
+cancelData.forEach((d,i) => hBar(ids[i], d.slice(0,5)));
+</script>
+</body>
+</html>
